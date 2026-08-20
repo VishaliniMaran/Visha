@@ -22,6 +22,14 @@
     @media (max-width:880px){.charts{grid-template-columns:1fr}}
     .small{font-size:13px;color:var(--muted)}
     footer{margin-top:18px;font-size:13px;color:var(--muted)}
+
+    /* KPI cards */
+    .kpi-grid{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+    .kpi-card{flex:1;min-width:160px;background:#f8fafc;border-radius:8px;padding:12px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(15,23,42,0.03)}
+    .kpi-left{display:flex;flex-direction:column}
+    .kpi-title{font-size:13px;color:var(--muted);margin-bottom:6px}
+    .kpi-value{font-weight:700;font-size:20px}
+    .info{margin-left:8px;color:var(--muted);font-size:13px;cursor:default}
   </style>
 </head>
 <body>
@@ -84,6 +92,33 @@
           <div class="section-title">Key Metrics</div>
           <div class="small">Visual summaries of demand, time savings, and weekly client impact.</div>
 
+          <!-- KPI summary cards -->
+          <div class="kpi-grid" id="kpiGrid">
+            <div class="kpi-card" title="Total number of tickets received across all service categories">
+              <div class="kpi-left">
+                <div class="kpi-title">Total Tickets</div>
+                <div class="kpi-value" id="kpiTickets">—</div>
+              </div>
+              <div class="info" aria-hidden="true">ℹ️</div>
+            </div>
+
+            <div class="kpi-card" title="Average saving hours per service (mean of each service's total saved hours)">
+              <div class="kpi-left">
+                <div class="kpi-title">Avg Saving Hours</div>
+                <div class="kpi-value" id="kpiAvgHours">—</div>
+              </div>
+              <div class="info" aria-hidden="true">ℹ️</div>
+            </div>
+
+            <div class="kpi-card" title="Total saving hours across all services">
+              <div class="kpi-left">
+                <div class="kpi-title">Total Savings (hrs)</div>
+                <div class="kpi-value" id="kpiTotalHours">—</div>
+              </div>
+              <div class="info" aria-hidden="true">ℹ️</div>
+            </div>
+          </div>
+
           <div style="margin-top:12px" class="charts">
             <div>
               <canvas id="ticketsChart" aria-label="Tickets per category chart"></canvas>
@@ -118,9 +153,27 @@
     const weeklyLabels = Array.from({length:12}, (_,i)=> `W${i+1}`);
     const weeklySavings = [1200, 1450, 1700, 1600, 1850, 2100, 2250, 2400, 2300, 2550, 2700, 2900]; // currency (e.g., USD) saved per week
 
+    // COMPUTE KPI VALUES
+    function sum(arr){return arr.reduce((a,b)=>a+b,0)}
+    function avg(arr){return arr.length?Math.round((sum(arr)/arr.length)*10)/10:0}
+
+    const totalTickets = sum(ticketsPerCategory);
+    const totalSavingHours = sum(savingHoursPerService);
+    const avgSavingHours = avg(savingHoursPerService);
+
+    // Render KPI values into the DOM
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const kt = document.getElementById('kpiTickets');
+      const ka = document.getElementById('kpiAvgHours');
+      const ktot = document.getElementById('kpiTotalHours');
+      if(kt) kt.innerText = totalTickets.toLocaleString();
+      if(ka) ka.innerText = avgSavingHours.toLocaleString() + ' hrs';
+      if(ktot) ktot.innerText = totalSavingHours.toLocaleString() + ' hrs';
+    });
+
     // Tickets Doughnut
     const ticketsCtx = document.getElementById('ticketsChart');
-    new Chart(ticketsCtx, {
+    const ticketsChart = new Chart(ticketsCtx, {
       type: 'doughnut',
       data: {
         labels: categories,
@@ -130,14 +183,18 @@
         }]
       },
       options: {
-        plugins:{legend:{position:'bottom'}},
+        plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label: function(ctx){
+          const label = ctx.label||''; const value = ctx.parsed;
+          const pct = (value / totalTickets * 100).toFixed(1);
+          return `${label}: ${value} tickets (${pct}%)`;
+        }}}},
         maintainAspectRatio:false
       }
     });
 
     // Saving Hours Bar
     const hoursCtx = document.getElementById('hoursChart');
-    new Chart(hoursCtx, {
+    const hoursChart = new Chart(hoursCtx, {
       type: 'bar',
       data: {
         labels: categories,
@@ -148,7 +205,10 @@
         }]
       },
       options: {
-        plugins:{legend:{display:false}},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label: function(ctx){
+          const label = ctx.label||''; const value = ctx.parsed.y || ctx.parsed;
+          return `${label}: ${value} hrs`;
+        }}}},
         scales:{y:{beginAtZero:true}},
         maintainAspectRatio:false
       }
@@ -156,7 +216,7 @@
 
     // Weekly Savings Line
     const weeklyCtx = document.getElementById('weeklyChart');
-    new Chart(weeklyCtx, {
+    const weeklyChart = new Chart(weeklyCtx, {
       type: 'line',
       data: {
         labels: weeklyLabels,
