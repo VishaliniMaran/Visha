@@ -3,66 +3,68 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CMY R&D — Services Dashboard</title>
+  <title>R&D Services Dashboard</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
-<body>
-  <header class="site-header">
-    <div class="container">
-      <h1>CMY R&amp;D — Services Dashboard</h1>
-      <p class="sub">Showcasing innovation, efficiency, and research-driven services</p>
-    </div>
-  </header>
+<body class="dark">
+  <div class="wrap">
+    <header class="hdr">
+      <h1>R&D Services Dashboard</h1>
+      <p class="sub">Service Performance Overview</p>
+    </header>
 
-  <main class="container">
-    <section class="overview card">
-      <h2>Overview</h2>
-      <p><strong>Mission:</strong> To accelerate product innovation by delivering rigorous research, efficient testing, and expert coordination that saves time and drives measurable client value.</p>
-      <p><strong>Vision:</strong> To be the trusted R&amp;D partner for companies wanting to scale innovation while minimizing development friction.</p>
-      <p><strong>Core values:</strong> Curiosity, Rigor, Collaboration, Transparency.</p>
-    </section>
-
-    <section class="services card">
-      <h2>Services Summary</h2>
-      <div class="summary-grid">
-        <div class="summary-item"><strong>Total Services</strong><div id="totalServices">-</div></div>
-        <div class="summary-item"><strong>Total Tickets</strong><div id="totalTickets">-</div></div>
-        <div class="summary-item"><strong>Total Eng Saving (Hrs)</strong><div id="totalHrs">-</div></div>
-        <div class="summary-item"><strong>Total Eng Saving (Wks)</strong><div id="totalWks">-</div></div>
+    <section class="kpis">
+      <div class="kpi">
+        <div class="kpi-icon">📥</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiTickets">-</div>
+          <div class="kpi-label">Total Tickets</div>
+        </div>
       </div>
 
-      <div class="services-list" id="servicesList"></div>
-    </section>
-
-    <section class="metrics-grid">
-      <div class="card metric">
-        <h3>Total Tickets by Category</h3>
-        <canvas id="ticketsChart" aria-label="Tickets by category" role="img"></canvas>
+      <div class="kpi">
+        <div class="kpi-icon">⏱️</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiHours">-</div>
+          <div class="kpi-label">Total Saving Hours</div>
+        </div>
       </div>
 
-      <div class="card metric">
-        <h3>Total Saving Hours (per service)</h3>
-        <canvas id="savingHoursChart" aria-label="Total saving hours per service" role="img"></canvas>
-      </div>
-
-      <div class="card metric wide">
-        <h3>Weekly Saved Hours Trend (last 8 weeks)</h3>
-        <canvas id="weeklySavingsChart" aria-label="Weekly savings over time" role="img"></canvas>
+      <div class="kpi">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiWeeks">-</div>
+          <div class="kpi-label">Total Savings (Week)</div>
+        </div>
       </div>
     </section>
 
-    <section class="controls card">
-      <button id="exportPdfBtn">Export PDF (browser)</button>
+    <section class="charts">
+      <div class="chart-card">
+        <h4 class="chart-title">Tickets by Category</h4>
+        <canvas id="ticketsChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h4 class="chart-title">Saving Hours by Category</h4>
+        <canvas id="hoursChart"></canvas>
+      </div>
+
+      <div class="chart-card wide">
+        <h4 class="chart-title">Savings (Week) by Category</h4>
+        <canvas id="weeksChart"></canvas>
+      </div>
     </section>
 
-  </main>
+    <section class="controls">
+      <button id="exportPdfBtn">Export PDF</button>
+    </section>
 
-  <footer class="site-footer">
-    <div class="container">© CMY R&amp;D</div>
-  </footer>
+    <footer class="ftr">Dashboard generated • Minimal view</footer>
+  </div>
 
   <script src="script.js"></script>
 </body>
