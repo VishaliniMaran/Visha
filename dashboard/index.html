@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CMY R&D — Services Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+  <style>
+    :root{--accent:#0b6efd;--muted:#6b7280;--card-bg:#ffffff;--bg:#f4f6fb}
+    body{font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:#111827; margin:0; padding:32px}
+    .container{max-width:1100px;margin:0 auto}
+    header{display:flex;gap:16px;align-items:center;margin-bottom:24px}
+    header h1{margin:0;font-size:22px}
+    .intro{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px}
+    .card{background:var(--card-bg);padding:16px;border-radius:8px;box-shadow:0 1px 2px rgba(16,24,40,0.03);flex:1}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    @media (max-width:880px){.grid{grid-template-columns:1fr}}
+    .services-list{list-style:none;padding:0;margin:0}
+    .services-list li{padding:8px 0;border-bottom:1px dashed #eef2ff}
+    .section-title{font-weight:600;margin-bottom:8px}
+    .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    @media (max-width:880px){.charts{grid-template-columns:1fr}}
+    .small{font-size:13px;color:var(--muted)}
+    footer{margin-top:18px;font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div style="width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#0b6efd,#7c3aed);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px">CMY</div>
+      <div>
+        <h1>CMY R&D — Services Dashboard</h1>
+        <div class="small">A concise view of services, demand, and client savings.</div>
+      </div>
+    </header>
+
+    <!-- Overview Section -->
+    <section class="intro">
+      <div class="card" style="min-width:320px;max-width:720px">
+        <div class="section-title">Overview</div>
+        <p><strong>CMY R&amp;D</strong> is dedicated to driving innovation through rigorous research, customer-centered engineering, and measurable efficiency improvements. Our mission is to accelerate clients' product development cycles while improving quality and reducing time-to-market. We value curiosity, integrity, and practical impact.</p>
+        <p class="small"><strong>Focus:</strong> Innovation-driven services with a strong R&amp;D backbone — from coordination and testing to actionable documentation.</p>
+      </div>
+
+      <div class="card" style="min-width:240px;max-width:320px">
+        <div class="section-title">Snapshot of Services</div>
+        <ul class="services-list">
+          <li><strong>Project Coordination</strong><div class="small">End-to-end program and sprint coordination</div></li>
+          <li><strong>Testing</strong><div class="small">Functional, integration, and performance testing</div></li>
+          <li><strong>Documentation</strong><div class="small">Technical docs, SOPs, and compliance artifacts</div></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Services + Charts -->
+    <section style="margin-top:18px">
+      <div class="grid">
+        <div class="card">
+          <div class="section-title">Detailed Services</div>
+          <p class="small">Below are the primary categories and examples of what each includes. Replace or expand these descriptions as needed.</p>
+          <h4>Project Coordination</h4>
+          <ul>
+            <li>Program planning & resource allocation</li>
+            <li>Vendor & stakeholder communication</li>
+            <li>Risk tracking & mitigations</li>
+          </ul>
+
+          <h4>Testing</h4>
+          <ul>
+            <li>Test planning & execution (manual & automated)</li>
+            <li>Regression & performance testing</li>
+            <li>Reporting & defect triage</li>
+          </ul>
+
+          <h4>Documentation</h4>
+          <ul>
+            <li>Technical manuals & user guides</li>
+            <li>Process documentation & SOPs</li>
+            <li>Regulatory & compliance support</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Key Metrics</div>
+          <div class="small">Visual summaries of demand, time savings, and weekly client impact.</div>
+
+          <div style="margin-top:12px" class="charts">
+            <div>
+              <canvas id="ticketsChart" aria-label="Tickets per category chart"></canvas>
+            </div>
+            <div>
+              <canvas id="hoursChart" aria-label="Total saving hours per service"></canvas>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <canvas id="weeklyChart" aria-label="Weekly savings trend"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Notes: The charts below use placeholder/mock data. To connect real data, replace the data arrays in the script with values from your backend or CSV export. Consider embedding this dashboard into an internal site or using it as the basis for a generated PDF report.
+    </footer>
+  </div>
+
+  <!-- Charts: Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // === SAMPLE DATA ===
+    // Replace these arrays with live data from your server or CSV parser.
+    const categories = ['Project Coordination','Testing','Documentation'];
+    const ticketsPerCategory = [124, 210, 87]; // total tickets received per category
+    const savingHoursPerService = [320, 540, 145]; // total saved hours per service
+
+    // Weekly savings: 12 weeks sample
+    const weeklyLabels = Array.from({length:12}, (_,i)=> `W${i+1}`);
+    const weeklySavings = [1200, 1450, 1700, 1600, 1850, 2100, 2250, 2400, 2300, 2550, 2700, 2900]; // currency (e.g., USD) saved per week
+
+    // Tickets Doughnut
+    const ticketsCtx = document.getElementById('ticketsChart');
+    new Chart(ticketsCtx, {
+      type: 'doughnut',
+      data: {
+        labels: categories,
+        datasets: [{
+          data: ticketsPerCategory,
+          backgroundColor: ['#0b6efd','#06b6d4','#7c3aed']
+        }]
+      },
+      options: {
+        plugins:{legend:{position:'bottom'}},
+        maintainAspectRatio:false
+      }
+    });
+
+    // Saving Hours Bar
+    const hoursCtx = document.getElementById('hoursChart');
+    new Chart(hoursCtx, {
+      type: 'bar',
+      data: {
+        labels: categories,
+        datasets: [{
+          label:'Total Saving Hours',
+          data: savingHoursPerService,
+          backgroundColor:['#7c3aed','#0b6efd','#06b6d4']
+        }]
+      },
+      options: {
+        plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:true}},
+        maintainAspectRatio:false
+      }
+    });
+
+    // Weekly Savings Line
+    const weeklyCtx = document.getElementById('weeklyChart');
+    new Chart(weeklyCtx, {
+      type: 'line',
+      data: {
+        labels: weeklyLabels,
+        datasets: [{
+          label: 'Weekly Savings (USD)',
+          data: weeklySavings,
+          borderColor: '#0b6efd',
+          backgroundColor: 'rgba(11,110,253,0.08)',
+          tension:0.2,
+          fill:true
+        }]
+      },
+      options: {
+        plugins:{legend:{position:'top'}},
+        scales:{y:{beginAtZero:true}},
+        maintainAspectRatio:false
+      }
+    });
+
+    // Make canvas containers flexible height for nicer appearance
+    ;[ 'ticketsChart','hoursChart','weeklyChart' ].forEach(id=>{
+      const c = document.getElementById(id);
+      c.style.width = '100%';
+      c.style.height = id === 'weeklyChart' ? '260px' : '200px';
+    });
+  </script>
+</body>
+</html>
