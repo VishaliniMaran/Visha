@@ -136,111 +136,78 @@
     </section>
 
     <footer>
-      Notes: The charts below use placeholder/mock data. To connect real data, replace the data arrays in the script with values from your backend or CSV export. Consider embedding this dashboard into an internal site or using it as the basis for a generated PDF report.
+      Notes: The charts below use sample data from dashboard/sample-data.json. To connect real data, replace the JSON file or point to a real API endpoint and update the fetch URL in the script.
     </footer>
   </div>
 
   <!-- Charts: Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // === SAMPLE DATA ===
-    // Replace these arrays with live data from your server or CSV parser.
-    const categories = ['Project Coordination','Testing','Documentation'];
-    const ticketsPerCategory = [124, 210, 87]; // total tickets received per category
-    const savingHoursPerService = [320, 540, 145]; // total saved hours per service
+    // Fallback inline sample in case fetch fails
+    const INLINE_SAMPLE = {
+      categories: ['Project Coordination','Testing','Documentation'],
+      ticketsPerCategory: [124,210,87],
+      savingHoursPerService: [320,540,145],
+      weeklyLabels: Array.from({length:12},(_,i)=>`W${i+1}`),
+      weeklySavings: [1200,1450,1700,1600,1850,2100,2250,2400,2300,2550,2700,2900]
+    };
 
-    // Weekly savings: 12 weeks sample
-    const weeklyLabels = Array.from({length:12}, (_,i)=> `W${i+1}`);
-    const weeklySavings = [1200, 1450, 1700, 1600, 1850, 2100, 2250, 2400, 2300, 2550, 2700, 2900]; // currency (e.g., USD) saved per week
+    async function loadSampleData(){
+      try{
+        const resp = await fetch('sample-data.json');
+        if(!resp.ok) throw new Error('Failed to fetch sample-data.json');
+        const data = await resp.json();
+        return data;
+      }catch(e){
+        console.warn('Using inline fallback sample data:', e);
+        return INLINE_SAMPLE;
+      }
+    }
 
-    // COMPUTE KPI VALUES
     function sum(arr){return arr.reduce((a,b)=>a+b,0)}
     function avg(arr){return arr.length?Math.round((sum(arr)/arr.length)*10)/10:0}
 
-    const totalTickets = sum(ticketsPerCategory);
-    const totalSavingHours = sum(savingHoursPerService);
-    const avgSavingHours = avg(savingHoursPerService);
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      const data = await loadSampleData();
+      const categories = data.categories;
+      const ticketsPerCategory = data.ticketsPerCategory;
+      const savingHoursPerService = data.savingHoursPerService;
+      const weeklyLabels = data.weeklyLabels;
+      const weeklySavings = data.weeklySavings;
 
-    // Render KPI values into the DOM
-    document.addEventListener('DOMContentLoaded', ()=>{
+      const totalTickets = sum(ticketsPerCategory);
+      const totalSavingHours = sum(savingHoursPerService);
+      const avgSavingHours = avg(savingHoursPerService);
+
+      // Fill KPI cards
       const kt = document.getElementById('kpiTickets');
       const ka = document.getElementById('kpiAvgHours');
       const ktot = document.getElementById('kpiTotalHours');
       if(kt) kt.innerText = totalTickets.toLocaleString();
       if(ka) ka.innerText = avgSavingHours.toLocaleString() + ' hrs';
       if(ktot) ktot.innerText = totalSavingHours.toLocaleString() + ' hrs';
-    });
 
-    // Tickets Doughnut
-    const ticketsCtx = document.getElementById('ticketsChart');
-    const ticketsChart = new Chart(ticketsCtx, {
-      type: 'doughnut',
-      data: {
-        labels: categories,
-        datasets: [{
-          data: ticketsPerCategory,
-          backgroundColor: ['#0b6efd','#06b6d4','#7c3aed']
-        }]
-      },
-      options: {
-        plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label: function(ctx){
-          const label = ctx.label||''; const value = ctx.parsed;
-          const pct = (value / totalTickets * 100).toFixed(1);
-          return `${label}: ${value} tickets (${pct}%)`;
-        }}}},
-        maintainAspectRatio:false
-      }
-    });
+      // Create charts
+      const ticketsCtx = document.getElementById('ticketsChart');
+      window.ticketsChart = new Chart(ticketsCtx, {
+        type: 'doughnut',
+        data: {labels: categories,datasets:[{data: ticketsPerCategory, backgroundColor:['#0b6efd','#06b6d4','#7c3aed']}]},
+        options:{plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:function(ctx){const label=ctx.label||'';const value=ctx.parsed;const pct=(value/totalTickets*100).toFixed(1);return `${label}: ${value} tickets (${pct}%)`;}}}},maintainAspectRatio:false}
+      });
 
-    // Saving Hours Bar
-    const hoursCtx = document.getElementById('hoursChart');
-    const hoursChart = new Chart(hoursCtx, {
-      type: 'bar',
-      data: {
-        labels: categories,
-        datasets: [{
-          label:'Total Saving Hours',
-          data: savingHoursPerService,
-          backgroundColor:['#7c3aed','#0b6efd','#06b6d4']
-        }]
-      },
-      options: {
-        plugins:{legend:{display:false},tooltip:{callbacks:{label: function(ctx){
-          const label = ctx.label||''; const value = ctx.parsed.y || ctx.parsed;
-          return `${label}: ${value} hrs`;
-        }}}},
-        scales:{y:{beginAtZero:true}},
-        maintainAspectRatio:false
-      }
-    });
+      const hoursCtx = document.getElementById('hoursChart');
+      window.hoursChart = new Chart(hoursCtx, {
+        type:'bar',data:{labels:categories,datasets:[{label:'Total Saving Hours',data:savingHoursPerService,backgroundColor:['#7c3aed','#0b6efd','#06b6d4']}]},
+        options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){const label=ctx.label||'';const value=ctx.parsed.y||ctx.parsed;return `${label}: ${value} hrs`;}}}},scales:{y:{beginAtZero:true}},maintainAspectRatio:false}
+      });
 
-    // Weekly Savings Line
-    const weeklyCtx = document.getElementById('weeklyChart');
-    const weeklyChart = new Chart(weeklyCtx, {
-      type: 'line',
-      data: {
-        labels: weeklyLabels,
-        datasets: [{
-          label: 'Weekly Savings (USD)',
-          data: weeklySavings,
-          borderColor: '#0b6efd',
-          backgroundColor: 'rgba(11,110,253,0.08)',
-          tension:0.2,
-          fill:true
-        }]
-      },
-      options: {
-        plugins:{legend:{position:'top'}},
-        scales:{y:{beginAtZero:true}},
-        maintainAspectRatio:false
-      }
-    });
+      const weeklyCtx = document.getElementById('weeklyChart');
+      window.weeklyChart = new Chart(weeklyCtx, {
+        type:'line',data:{labels:weeklyLabels,datasets:[{label:'Weekly Savings (USD)',data:weeklySavings,borderColor:'#0b6efd',backgroundColor:'rgba(11,110,253,0.08)',tension:0.2,fill:true}]},
+        options:{plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}},maintainAspectRatio:false}
+      });
 
-    // Make canvas containers flexible height for nicer appearance
-    ;[ 'ticketsChart','hoursChart','weeklyChart' ].forEach(id=>{
-      const c = document.getElementById(id);
-      c.style.width = '100%';
-      c.style.height = id === 'weeklyChart' ? '260px' : '200px';
+      ;['ticketsChart','hoursChart','weeklyChart'].forEach(id=>{const c=document.getElementById(id);c.style.width='100%';c.style.height = id==='weeklyChart' ? '260px' : '200px';});
     });
   </script>
 </body>
