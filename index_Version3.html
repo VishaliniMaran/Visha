@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>R&D Services Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body class="dark">
+  <div class="wrap">
+    <header class="hdr">
+      <h1>R&D Services Dashboard</h1>
+      <p class="sub">Service Performance Overview</p>
+    </header>
+
+    <section class="kpis">
+      <div class="kpi">
+        <div class="kpi-icon">📥</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiTickets">-</div>
+          <div class="kpi-label">Total Tickets</div>
+        </div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-icon">⏱️</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiHours">-</div>
+          <div class="kpi-label">Total Saving Hours</div>
+        </div>
+      </div>
+
+      <div class="kpi">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpiWeeks">-</div>
+          <div class="kpi-label">Total Savings (Week)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="charts">
+      <div class="chart-card">
+        <h4 class="chart-title">Tickets by Category</h4>
+        <canvas id="ticketsChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h4 class="chart-title">Saving Hours by Category</h4>
+        <canvas id="hoursChart"></canvas>
+      </div>
+
+      <div class="chart-card wide">
+        <h4 class="chart-title">Savings (Week) by Category</h4>
+        <canvas id="weeksChart"></canvas>
+      </div>
+    </section>
+
+    <section class="controls">
+      <button id="exportPdfBtn">Export PDF</button>
+    </section>
+
+    <footer class="ftr">Dashboard generated • Minimal view</footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
