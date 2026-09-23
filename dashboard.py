@@ -1,10 +1,13 @@
-"""Streamlit dashboard for R&D Services metrics.
+"""R&D Services Metrics dashboard.
 
-Run locally with:
+Run locally:
+    python -m pip install -r requirements.txt
     streamlit run dashboard.py
 """
 
 from __future__ import annotations
+
+import io
 
 import pandas as pd
 import plotly.express as px
@@ -18,114 +21,111 @@ st.set_page_config(
 )
 
 
+CATEGORY_COLORS = {
+    "Project Coordination": "#2563eb",
+    "Testing": "#16a34a",
+    "Documentation": "#f97316",
+}
+
+
 @st.cache_data
-def load_service_data() -> pd.DataFrame:
-    """Return the supplied R&D service metrics."""
+def load_metrics() -> pd.DataFrame:
+    """Return the R&D service metrics supplied by the user."""
     return pd.DataFrame(
         [
-            {
-                "Category": "Project Coordination",
-                "Tickets": 313,
-                "Saving Hours": 3003.5,
-                "Savings (week)": 79,
-            },
-            {
-                "Category": "Testing",
-                "Tickets": 40,
-                "Saving Hours": 914,
-                "Savings (week)": 24,
-            },
-            {
-                "Category": "Documentation",
-                "Tickets": 596,
-                "Saving Hours": 4643,
-                "Savings (week)": 122,
-            },
+            {"Category": "Project Coordination", "Tickets": 313, "Saving Hours": 3003.5, "Savings (Week)": 79},
+            {"Category": "Testing", "Tickets": 40, "Saving Hours": 914, "Savings (Week)": 24},
+            {"Category": "Documentation", "Tickets": 596, "Saving Hours": 4643, "Savings (Week)": 122},
         ]
     )
 
 
-def apply_chart_theme(fig):
-    """Apply a consistent readable theme to Plotly charts."""
+def chart_layout(fig):
     fig.update_layout(
         template="plotly_white",
-        margin=dict(l=20, r=20, t=60, b=20),
+        margin=dict(l=20, r=20, t=65, b=20),
         legend_title_text="",
+        font=dict(color="#172033"),
     )
     return fig
 
 
 def main() -> None:
-    data = load_service_data()
+    data = load_metrics()
 
     st.title("R&D Services Metrics Dashboard")
-    st.caption("Overview of tickets received, saving hours, and weekly savings by category")
+    st.caption("Tickets received, saving hours, and weekly savings by category")
 
     total_tickets = int(data["Tickets"].sum())
     total_hours = float(data["Saving Hours"].sum())
-    total_weekly_savings = int(data["Savings (week)"].sum())
+    total_weeks = int(data["Savings (Week)"].sum())
 
-    kpi_tickets, kpi_hours, kpi_weeks = st.columns(3)
-    kpi_tickets.metric("Total Tickets Received", f"{total_tickets:,}")
-    kpi_hours.metric("Total Saving Hours", f"{total_hours:,.1f}")
-    kpi_weeks.metric("Total Savings (Week)", f"{total_weekly_savings:,}")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Tickets Received", f"{total_tickets:,}")
+    col2.metric("Total Saving Hours", f"{total_hours:,.1f}")
+    col3.metric("Total Savings (Week)", f"{total_weeks:,}")
 
     st.divider()
 
     left, right = st.columns(2)
 
     with left:
-        ticket_chart = px.pie(
+        pie = px.pie(
             data,
             names="Category",
             values="Tickets",
             hole=0.45,
             title="Tickets Received by Category",
-            color_discrete_sequence=["#2563eb", "#16a34a", "#f97316"],
+            color="Category",
+            color_discrete_map=CATEGORY_COLORS,
         )
-        ticket_chart.update_traces(textinfo="label+percent", hovertemplate="%{label}: %{value:,}<extra></extra>")
-        st.plotly_chart(apply_chart_theme(ticket_chart), use_container_width=True)
+        pie.update_traces(
+            textinfo="label+percent",
+            hovertemplate="%{label}: %{value:,} tickets<extra></extra>",
+        )
+        st.plotly_chart(chart_layout(pie), use_container_width=True)
 
     with right:
-        hours_chart = px.bar(
+        hours = px.bar(
             data,
             x="Category",
             y="Saving Hours",
             text="Saving Hours",
             title="Saving Hours by Category",
             color="Category",
-            color_discrete_sequence=["#2563eb", "#16a34a", "#f97316"],
+            color_discrete_map=CATEGORY_COLORS,
         )
-        hours_chart.update_traces(texttemplate="%{text:,.1f}", textposition="outside")
-        hours_chart.update_layout(showlegend=False, yaxis_title="Hours", xaxis_title="")
-        st.plotly_chart(apply_chart_theme(hours_chart), use_container_width=True)
+        hours.update_traces(texttemplate="%{text:,.1f}", textposition="outside")
+        hours.update_layout(showlegend=False, xaxis_title="", yaxis_title="Saving hours")
+        st.plotly_chart(chart_layout(hours), use_container_width=True)
 
-    weekly_chart = px.bar(
+    weekly = px.bar(
         data,
         x="Category",
-        y="Savings (week)",
-        text="Savings (week)",
+        y="Savings (Week)",
+        text="Savings (Week)",
         title="Savings (Week) by Category",
         color="Category",
-        color_discrete_sequence=["#2563eb", "#16a34a", "#f97316"],
+        color_discrete_map=CATEGORY_COLORS,
     )
-    weekly_chart.update_traces(textposition="outside")
-    weekly_chart.update_layout(showlegend=False, yaxis_title="Savings (week)", xaxis_title="")
-    st.plotly_chart(apply_chart_theme(weekly_chart), use_container_width=True)
+    weekly.update_traces(textposition="outside")
+    weekly.update_layout(showlegend=False, xaxis_title="", yaxis_title="Savings (week)")
+    st.plotly_chart(chart_layout(weekly), use_container_width=True)
 
-    st.subheader("Service Metrics Detail")
+    st.subheader("R&D Services Metrics")
     st.dataframe(
         data.style.format(
-            {"Tickets": "{:,.0f}", "Saving Hours": "{:,.1f}", "Savings (week)": "{:,.0f}"}
+            {"Tickets": "{:,.0f}", "Saving Hours": "{:,.1f}", "Savings (Week)": "{:,.0f}"}
         ),
         use_container_width=True,
         hide_index=True,
     )
 
-    csv_data = data.to_csv(index=False).encode("utf-8")
+    csv_file = io.StringIO()
+    data.to_csv(csv_file, index=False)
     st.download_button(
-        "Download metrics as CSV",
-        data=csv_data,
+        "⬇ Export metrics as CSV",
+        data=csv_file.getvalue(),
         file_name="rnd_services_metrics.csv",
         mime="text/csv",
     )
