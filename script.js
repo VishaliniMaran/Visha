@@ -1,64 +1,62 @@
-// Minimal dashboard script
-const data = {
-  servicesSummary: [
-    { category: 'Project Coordination', numServices: 23, tickets: 313, totalEngSavingHrs: 3003.5, totalEngSavingWks: 79 },
-    { category: 'Testing', numServices: 4, tickets: 40, totalEngSavingHrs: 914, totalEngSavingWks: 24 },
-    { category: 'Documentation', numServices: 13, tickets: 596, totalEngSavingHrs: 4643, totalEngSavingWks: 122 }
-  ],
-  totals: { numServices: 40, tickets: 949, totalEngSavingHrs: 8561, totalEngSavingWks: 225 }
-};
+const services = [
+  { category: "Project Coordination", tickets: 313, hours: 3003.5, weeks: 79 },
+  { category: "Testing", tickets: 40, hours: 914, weeks: 24 },
+  { category: "Documentation", tickets: 596, hours: 4643, weeks: 122 }
+];
 
-function formatNumber(v){
-  if(Number.isInteger(v)) return v.toString();
-  return v.toLocaleString(undefined,{maximumFractionDigits:1});
+const colors = ["#356ae6", "#18a66a", "#f28a35"];
+const number = (value, digits = 0) => value.toLocaleString(undefined, { maximumFractionDigits: digits });
+
+function chartOptions(extra = {}) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: "#526174", usePointStyle: true, padding: 18 } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: "#718096" } },
+      y: { beginAtZero: true, border: { display: false }, grid: { color: "#edf0f5" }, ticks: { color: "#718096" } }
+    },
+    ...extra
+  };
 }
 
-function init(){
-  document.getElementById('kpiTickets').textContent = formatNumber(data.totals.tickets);
-  document.getElementById('kpiHours').textContent = formatNumber(data.totals.totalEngSavingHrs);
-  document.getElementById('kpiWeeks').textContent = formatNumber(data.totals.totalEngSavingWks);
+function renderDashboard() {
+  const totals = services.reduce((result, service) => ({
+    tickets: result.tickets + service.tickets,
+    hours: result.hours + service.hours,
+    weeks: result.weeks + service.weeks
+  }), { tickets: 0, hours: 0, weeks: 0 });
 
-  const colors = ['#2f7ef7','#28c76f','#ff9800'];
+  document.getElementById("kpiTickets").textContent = number(totals.tickets);
+  document.getElementById("kpiHours").textContent = number(totals.hours, 1);
+  document.getElementById("kpiWeeks").textContent = number(totals.weeks);
+  document.getElementById("metricsTable").innerHTML = services.map(service => `
+    <tr><td><strong>${service.category}</strong></td><td>${number(service.tickets)}</td><td>${number(service.hours, 1)}</td><td>${number(service.weeks)}</td></tr>`).join("");
 
-  // Tickets doughnut
-  const tCtx = document.getElementById('ticketsChart').getContext('2d');
-  new Chart(tCtx, {
-    type: 'doughnut',
-    data: { labels: data.servicesSummary.map(s=>s.category), datasets: [{ data: data.servicesSummary.map(s=>s.tickets), backgroundColor: colors }] },
-    options: { plugins: { legend: { display: true, labels: { color: '#9aa3ad' } } } }
+  new Chart(document.getElementById("ticketsChart"), {
+    type: "doughnut",
+    data: { labels: services.map(s => s.category), datasets: [{ data: services.map(s => s.tickets), backgroundColor: colors, borderWidth: 3, borderColor: "#fff" }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "64%", plugins: { legend: { position: "bottom", labels: { color: "#526174", usePointStyle: true, padding: 18 } } } }
   });
 
-  // Saving hours bar
-  const hCtx = document.getElementById('hoursChart').getContext('2d');
-  new Chart(hCtx, {
-    type: 'bar',
-    data: { labels: data.servicesSummary.map(s=>s.category), datasets: [{ data: data.servicesSummary.map(s=>s.totalEngSavingHrs), backgroundColor: colors }] },
-    options: { scales: { y: { ticks: { color: '#9aa3ad' }, beginAtZero: true }, x: { ticks: { color: '#9aa3ad' } } }, plugins:{ legend:{ display:false } } }
+  new Chart(document.getElementById("hoursChart"), {
+    type: "bar",
+    data: { labels: services.map(s => s.category), datasets: [{ label: "Saving Hours", data: services.map(s => s.hours), backgroundColor: colors, borderRadius: 6, barPercentage: .62 }] },
+    options: chartOptions({ plugins: { legend: { display: false }, tooltip: { callbacks: { label: item => ` ${number(item.raw, 1)} hours` } } } })
   });
 
-  // Weeks horizontal bar
-  const wCtx = document.getElementById('weeksChart').getContext('2d');
-  new Chart(wCtx, {
-    type: 'bar',
-    data: { labels: data.servicesSummary.map(s=>s.category), datasets: [{ data: data.servicesSummary.map(s=>s.totalEngSavingWks), backgroundColor: colors }] },
-    options: { indexAxis: 'y', scales: { x: { ticks: { color: '#9aa3ad' }, beginAtZero:true }, y: { ticks: { color: '#9aa3ad' } } }, plugins:{ legend:{ display:false } } }
+  new Chart(document.getElementById("weeksChart"), {
+    type: "bar",
+    data: { labels: services.map(s => s.category), datasets: [{ label: "Savings (Week)", data: services.map(s => s.weeks), backgroundColor: colors, borderRadius: 6, barPercentage: .58 }] },
+    options: chartOptions({ indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: "#edf0f5" }, ticks: { color: "#718096" } }, y: { grid: { display: false }, ticks: { color: "#718096" } } } })
   });
-
-  document.getElementById('exportPdfBtn').addEventListener('click', exportPdf);
 }
 
-async function exportPdf(){
-  const container = document.querySelector('.wrap');
-  const canvas = await html2canvas(container, { scale: 2 });
-  const img = canvas.toDataURL('image/jpeg', 0.95);
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p','mm','a4');
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const imgProps = pdf.getImageProperties(img);
-  const imgWidth = pageWidth - 16;
-  const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-  pdf.addImage(img, 'JPEG', 8, 8, imgWidth, imgHeight);
-  pdf.save('RnD_Services_Dashboard.pdf');
-}
-
-window.addEventListener('DOMContentLoaded', init);
+document.addEventListener("DOMContentLoaded", renderDashboard);
+document.getElementById("exportBtn").addEventListener("click", async () => {
+  const canvas = await html2canvas(document.getElementById("dashboardRoot"), { backgroundColor: "#f5f7fb", scale: 2 });
+  const link = document.createElement("a");
+  link.download = "rnd-services-metrics.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+});

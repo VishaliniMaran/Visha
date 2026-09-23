@@ -1,53 +1,24 @@
-# CMY R&D Dashboard
+# R&D Services Metrics Dashboard
 
-This repo adds a single-page dashboard to showcase CMY R&D services and includes scripts to generate a PDF snapshot.
+A white-themed dashboard built with HTML, CSS, JavaScript, and Chart.js. It displays:
 
-Files added:
-- index.html - dashboard UI (Chart.js) with embedded sample data
-- styles.css - styling
-- script.js - chart rendering and browser PDF export
-- render.js - Node + Puppeteer script to render index.html or a URL to PDF
-- render.py - Python Playwright script to render index.html or a URL to PDF
-- README.md - this file
+- Total tickets received: **949**
+- Total saving hours: **8,561.5**
+- Total savings per week: **225**
+- Tickets by category
+- Saving hours by category
+- Weekly savings by category
+- A detailed metrics table
+- PNG export
 
+## Run in VS Code
 
-Quick start (Node / Puppeteer)
+1. Open the repository folder in VS Code.
+2. Open `index.html`.
+3. Install the **Live Server** extension by Ritwick Dey.
+4. Right-click `index.html` and choose **Open with Live Server**.
+5. The dashboard will open in your browser.
 
-1. Clone the repo (or work in this repo):
-   git clone https://github.com/VishaliniMaran/Visha.git
-   cd Visha
+The dashboard uses CDN links for Chart.js and html2canvas, so an internet connection is required when loading the page. No Python, Node.js, or build step is required.
 
-2. Install dependencies:
-   npm init -y
-   npm install puppeteer
-
-3. Render PDF (local file):
-   node render.js
-
-   Or render a hosted URL:
-   node render.js https://example.com/path/to/index.html out.pdf
-
-
-Python (Playwright)
-
-1. Set up virtualenv and install Playwright:
-   python -m venv .venv
-   source .venv/bin/activate    # Windows: .venv\\Scripts\\activate
-   pip install playwright
-   playwright install
-
-2. Run the renderer:
-   python render.py
-
-
-Browser export (quick)
-
-Open index.html in your browser and click "Export PDF (browser)" — this uses html2canvas + jsPDF to produce a PDF.
-
-
-Notes
-
-- The dashboard uses the provided sample data (Project Coordination, Testing, Documentation) baked into script.js.
-- The Node script uses Puppeteer; in CI environments you may need additional flags or packages (see Puppeteer docs).
-- The Python script uses Playwright sync API to render the page.
-
+You can also open `index.html` directly in a browser, although Live Server is recommended for VS Code development.

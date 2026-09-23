@@ -2,70 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>R&D Services Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>R&amp;D Services Metrics</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
-<body class="dark">
-  <div class="wrap">
-    <header class="hdr">
-      <h1>R&D Services Dashboard</h1>
-      <p class="sub">Service Performance Overview</p>
+<body>
+  <main class="dashboard" id="dashboardRoot">
+    <header class="header">
+      <div>
+        <p class="eyebrow">PERFORMANCE OVERVIEW</p>
+        <h1>R&amp;D Services Metrics</h1>
+        <p class="subtitle">Tickets received, saving hours, and weekly savings by service category</p>
+      </div>
+      <button class="export-button" id="exportBtn" type="button">⬇ Export PNG</button>
     </header>
 
-    <section class="kpis">
-      <div class="kpi">
-        <div class="kpi-icon">📥</div>
-        <div class="kpi-body">
-          <div class="kpi-value" id="kpiTickets">-</div>
-          <div class="kpi-label">Total Tickets</div>
-        </div>
-      </div>
-
-      <div class="kpi">
-        <div class="kpi-icon">⏱️</div>
-        <div class="kpi-body">
-          <div class="kpi-value" id="kpiHours">-</div>
-          <div class="kpi-label">Total Saving Hours</div>
-        </div>
-      </div>
-
-      <div class="kpi">
-        <div class="kpi-icon">📈</div>
-        <div class="kpi-body">
-          <div class="kpi-value" id="kpiWeeks">-</div>
-          <div class="kpi-label">Total Savings (Week)</div>
-        </div>
-      </div>
+    <section class="kpis" aria-label="Summary metrics">
+      <article class="kpi-card blue">
+        <span class="kpi-icon">📥</span>
+        <div><p>Total Tickets</p><strong id="kpiTickets">0</strong><small>Across all categories</small></div>
+      </article>
+      <article class="kpi-card green">
+        <span class="kpi-icon">⏱</span>
+        <div><p>Total Saving Hours</p><strong id="kpiHours">0</strong><small>Engineering hours saved</small></div>
+      </article>
+      <article class="kpi-card orange">
+        <span class="kpi-icon">📈</span>
+        <div><p>Total Savings (Week)</p><strong id="kpiWeeks">0</strong><small>Combined weekly savings</small></div>
+      </article>
     </section>
 
-    <section class="charts">
-      <div class="chart-card">
-        <h4 class="chart-title">Tickets by Category</h4>
-        <canvas id="ticketsChart"></canvas>
-      </div>
-
-      <div class="chart-card">
-        <h4 class="chart-title">Saving Hours by Category</h4>
-        <canvas id="hoursChart"></canvas>
-      </div>
-
-      <div class="chart-card wide">
-        <h4 class="chart-title">Savings (Week) by Category</h4>
-        <canvas id="weeksChart"></canvas>
-      </div>
+    <section class="chart-grid">
+      <article class="panel">
+        <div class="panel-heading"><div><h2>Tickets by Category</h2><p>Distribution of received tickets</p></div></div>
+        <div class="chart-container doughnut-container"><canvas id="ticketsChart"></canvas></div>
+      </article>
+      <article class="panel">
+        <div class="panel-heading"><div><h2>Saving Hours by Category</h2><p>Engineering hours saved</p></div></div>
+        <div class="chart-container"><canvas id="hoursChart"></canvas></div>
+      </article>
+      <article class="panel full-width">
+        <div class="panel-heading"><div><h2>Weekly Savings by Category</h2><p>Saved weeks across each service area</p></div></div>
+        <div class="chart-container weekly-container"><canvas id="weeksChart"></canvas></div>
+      </article>
     </section>
 
-    <section class="controls">
-      <button id="exportPdfBtn">Export PDF</button>
+    <section class="panel table-panel">
+      <div class="panel-heading"><div><h2>Service Metrics Detail</h2><p>Summary of all reported R&amp;D services</p></div></div>
+      <div class="table-wrapper"><table><thead><tr><th>Category</th><th>Tickets</th><th>Saving Hours</th><th>Savings (Week)</th></tr></thead><tbody id="metricsTable"></tbody></table></div>
     </section>
-
-    <footer class="ftr">Dashboard generated • Minimal view</footer>
-  </div>
-
+    <footer>R&amp;D Services Metrics Dashboard</footer>
+  </main>
   <script src="script.js"></script>
 </body>
 </html>
